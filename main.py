@@ -36,11 +36,59 @@ for i in range(len(sub_list)):
             field_format = "string"
         elif field_format == "numeric":
             field_format = "int"
+        elif field_format == "money":
+            field_format = "decimal(18,2)"
         table_dict["{}".format(field_name)] = field_format
         print(table_dict)
         print("----------------table_dict------------------")
     db_dict["{}".format(current_table_name)] = table_dict
     print(db_dict)
-    print("----------------table_dict------------------")
+    print("----------------db_dict------------------")
+
+## PART 3 - Create DDLs
+env = ["prd","mod"]
+for j in range(len(env)):
+    for tb_name, tb_fields in db_dict.items():
+        head_stg = "CREATE EXTERNAL TABLE IF NOT EXISTS {}(".format(tb_name)
+        head_orc = "CREATE TABLE IF NOT EXISTS {}(".format(tb_name)
+        pk = list(tb_fields.keys())[0]
+        fields = ""
+        for field in db_dict[tb_name]:
+            fields += "{} {},".format(field,db_dict[tb_name][field])
+        fields = fields[:-1]
+
+        body_stg = ") ROW FORMAT DELIMITED" \
+              "FIELDS TERMINATED BY '\073' " \
+              "LINES TERMINATED BY '\n' " \
+              "LOCATION" \
+              "'hdfs://hsspas610:8020/RSA/Staging/stg_{}_pr_ccs_no_claims/{}';".format(env[j],tb_name)
+
+        body_orc = ") CLUSTERED BY ({}) " \
+                   "INTO 1 BUCKETS " \
+                   "ROW FORMAT SERDE " \
+                   "'org.apache.hadoop.hive.ql.io.orc.OrcSerde' " \
+                   "STORED AS INPUTFORMAT " \
+                   "'org.apache.hadoop.hive.ql.io.orc.OrcInputFormat' " \
+                   "OUTPUTFORMAT " \
+                   "'org.apache.hadoop.hive.ql.io.orc.OrcOutputFormat' " \
+                   "LOCATION " \
+                   "'hdfs://hsspas610:8020/apps/hive/warehouse/{}_pr_ccs_no_claims.db/{}'" \
+                   "TBLPROPERTIES ('transactional'='true');".format(pk,env[j],tb_name)
+
+
+        stg = head_stg + fields + body_stg
+        orc = head_orc + fields + body_orc
+
+        #stg_mod = open("stg_mod.sql", "w+")
+        #orc_mod = open("orc_mod.sql", "w+")
+        #stg_prd = open("stg_prd.sql", "w+")
+        #orc_prd = open("orc_prd.sql", "w+")
+
+        print(stg)
+        print ("---------------------------")
+        print(orc)
+        print("---------------------------")
+    print("SHOULD BE 4 STATEMENTS UP")
+
 
 
