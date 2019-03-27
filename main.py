@@ -48,6 +48,8 @@ for i in range(len(sub_list)):
 ## PART 3 - Create DDLs
 env = ["prd","mod"]
 for j in range(len(env)):
+    stg_filepath = '/Users/kevenlemoing/Sites/perso/sqlserver_to_hive/output/stg_{}.sql'.format(env[j])
+    orc_filepath = '/Users/kevenlemoing/Sites/perso/sqlserver_to_hive/output/orc_{}.sql'.format(env[j])
     for tb_name, tb_fields in db_dict.items():
         head_stg = "CREATE EXTERNAL TABLE IF NOT EXISTS {}(".format(tb_name)
         head_orc = "CREATE TABLE IF NOT EXISTS {}(".format(tb_name)
@@ -58,8 +60,8 @@ for j in range(len(env)):
         fields = fields[:-1]
 
         body_stg = ") ROW FORMAT DELIMITED" \
-              "FIELDS TERMINATED BY '\073' " \
-              "LINES TERMINATED BY '\n' " \
+              "FIELDS TERMINATED BY '\\073' " \
+              "LINES TERMINATED BY '\\n' " \
               "LOCATION" \
               "'hdfs://hsspas610:8020/RSA/Staging/stg_{}_pr_ccs_no_claims/{}';".format(env[j],tb_name)
 
@@ -75,20 +77,21 @@ for j in range(len(env)):
                    "'hdfs://hsspas610:8020/apps/hive/warehouse/{}_pr_ccs_no_claims.db/{}'" \
                    "TBLPROPERTIES ('transactional'='true');".format(pk,env[j],tb_name)
 
-
         stg = head_stg + fields + body_stg
         orc = head_orc + fields + body_orc
 
-        #stg_mod = open("stg_mod.sql", "w+")
-        #orc_mod = open("orc_mod.sql", "w+")
-        #stg_prd = open("stg_prd.sql", "w+")
-        #orc_prd = open("orc_prd.sql", "w+")
+        stg_w = open(stg_filepath, "a")
+        stg_w.write(stg+ "\n")
+        stg_w.close()
+
+        orc_w = open(orc_filepath, "a")
+        orc_w.write(orc+ "\n")
+        orc_w.close()
 
         print(stg)
-        print ("---------------------------")
+        print ("-----------stg----------------")
         print(orc)
-        print("---------------------------")
-    print("SHOULD BE 4 STATEMENTS UP")
+        print("-------------orc--------------")
 
 
 
