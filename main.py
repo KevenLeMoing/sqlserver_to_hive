@@ -1,7 +1,6 @@
 import re
 
 filepath = '/Users/kevenlemoing/Sites/perso/sqlserver_to_hive/data/sqlserver_export_schema.sql'
-lines_list=[]
 filter = ["CONSTRAINT","SET","GO","ASC","WITH",") ON","Script"," ON ", "ON PRIMARY","USE"]
 lines_list = []
 db_dict = dict()
@@ -17,17 +16,19 @@ with open(filepath, encoding="utf-8", errors='ignore') as f2:
             lines_list.append(line)
 
 print (lines_list)
-sub_list = lines_list[:17]
-print(sub_list)
+
+### Get substract of tables to test Hive syntax
+#sub_list = lines_list[:17]
+#print(sub_list)
 
 ## PART 2 - Compose dictionnaries
-for i in range(len(sub_list)):
-    if "CREATE TABLE" in sub_list[i]:
-        current_table_name = sub_list[i].split("CREATE TABLE ")[1]
+for i in range(len(lines_list)):
+    if "CREATE TABLE" in lines_list[i]:
+        current_table_name = lines_list[i].split("CREATE TABLE ")[1]
         table_dict = dict()
     else:
-        field_name = sub_list[i].split(" ")[0]
-        field_format = sub_list[i].split(" ")[1]
+        field_name = lines_list[i].split(" ")[0]
+        field_format = lines_list[i].split(" ")[1]
         if field_format == "datetime":
             field_format = "date"
         elif field_format == "nvarchar":
@@ -65,7 +66,7 @@ for j in range(len(env)):
               "LOCATION" \
               "'hdfs://hsspas610:8020/RSA/Staging/stg_{}_pr_ccs_no_claims/{}';".format(env[j],tb_name)
 
-        body_orc = ") CLUSTERED BY ({}) " \
+        body_orc = ",changed_timestamp timestamp) CLUSTERED BY ({}) " \
                    "INTO 1 BUCKETS " \
                    "ROW FORMAT SERDE " \
                    "'org.apache.hadoop.hive.ql.io.orc.OrcSerde' " \
