@@ -58,15 +58,15 @@ for j in range(len(env)):
         fields = ""
         for field in db_dict[tb_name]:
             fields += "{} {},".format(field,db_dict[tb_name][field])
-        fields = fields[:-1]
 
-        body_stg = ") ROW FORMAT DELIMITED" \
+
+        body_stg = "changed_timestamp timestamp) ROW FORMAT DELIMITED" \
               "FIELDS TERMINATED BY '\\073' " \
               "LINES TERMINATED BY '\\n' " \
               "LOCATION" \
               "'hdfs://hsspas610:8020/RSA/Staging/stg_{}_pr_ccs_no_claims/{}';".format(env[j],tb_name)
 
-        body_orc = ",changed_timestamp timestamp) CLUSTERED BY ({}) " \
+        body_orc = "changed_timestamp timestamp) CLUSTERED BY ({}) " \
                    "INTO 1 BUCKETS " \
                    "ROW FORMAT SERDE " \
                    "'org.apache.hadoop.hive.ql.io.orc.OrcSerde' " \
